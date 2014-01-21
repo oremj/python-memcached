@@ -82,7 +82,7 @@ valid_key_chars_re = re.compile('[\x21-\x7e\x80-\xff]+$')
 
 #  Original author: Evan Martin of Danga Interactive
 __author__    = "Sean Reifschneider <jafo-memcached@tummy.com>"
-__version__ = "1.53"
+__version__ = "1.54"
 __copyright__ = "Copyright (C) 2003 Danga Interactive"
 #  http://en.wikipedia.org/wiki/Python_Software_Foundation_License
 __license__   = "Python Software Foundation License"
@@ -402,12 +402,8 @@ class Client(local):
         for server in server_keys.iterkeys():
             bigcmd = []
             write = bigcmd.append
-            if time != None:
-                 for key in server_keys[server]: # These are mangled keys
-                     write("delete %s %d\r\n" % (key, time))
-            else:
-                for key in server_keys[server]: # These are mangled keys
-                  write("delete %s\r\n" % key)
+            for key in server_keys[server]: # These are mangled keys
+              write("delete %s\r\n" % key)
             try:
                 server.send_cmds(''.join(bigcmd))
             except socket.error, msg:
@@ -434,8 +430,6 @@ class Client(local):
         '''Deletes a key from the memcache.
 
         @return: Nonzero on success.
-        @param time: number of seconds any subsequent set / update commands
-        should fail. Defaults to None for no delay.
         @rtype: int
         '''
         if self.do_check_key:
@@ -444,10 +438,7 @@ class Client(local):
         if not server:
             return 0
         self._statlog('delete')
-        if time != None and time != 0:
-            cmd = "delete %s %d" % (key, time)
-        else:
-            cmd = "delete %s" % key
+        cmd = "delete %s" % key
 
         try:
             server.send_cmd(cmd)
